@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Local run data and state packages
+StateSync/
+source-*/
+two-way-runs/
+desktop-ui-checks/
+
+# Credentials and local config
+*.credential.xml
+*.local.ps1
+*.local.json
+secrets.*
+
+# Editor files
+.vscode/
+.idea/

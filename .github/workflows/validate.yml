@@ -1,0 +1,40 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  syntax:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python syntax
+        run: py -m py_compile scripts/codex_state_sync.py scripts/codex_desktop_validate.py
+      - name: PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem scripts -Filter *.ps1
+          foreach ($file in $files) {
+            [scriptblock]::Create((Get-Content -Raw $file.FullName)) | Out-Null
+          }
+      - name: Secret scan for example values
+        shell: pwsh
+        run: |
+          $patterns = @(
+            'DesktopPassword\s*=\s*"[^"]+"',
+            '-DesktopPassword\s+"[^"]+"',
+            'C:\\Users\\[^$%<"]+\\',
+            '192\.168\.\d+\.\d+',
+            '10\.\d+\.\d+\.\d+',
+            '172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+'
+          )
+          $files = Get-ChildItem -Recurse -File
+          foreach ($pattern in $patterns) {
+            if ($files | Select-String -Pattern $pattern -ErrorAction SilentlyContinue) {
+              throw "Secret or machine-specific value found: $pattern"
+            }
+          }
