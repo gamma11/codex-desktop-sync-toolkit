@@ -59,11 +59,12 @@ Copy the `scripts` folder to both machines. A common location is:
 From the orchestrating PC, register the daily scheduled task:
 
 ```powershell
+$env:CODEX_DESKTOP_SSH_PASSWORD = Read-Host "Remote SSH password"
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Register-CodexTwoWaySyncSchedule.ps1 `
   -DesktopHost "192.0.2.10" `
   -DesktopUser "YOUR_REMOTE_USER" `
   -DesktopHostKey "SHA256:YOUR_PINNED_HOST_KEY" `
-  -DesktopPassword "YOUR_REMOTE_PASSWORD"
+  -DesktopPassword $env:CODEX_DESKTOP_SSH_PASSWORD
 ```
 
 The password is stored using Windows `Export-Clixml`, encrypted for the current Windows user on the current PC.
@@ -73,12 +74,13 @@ The password is stored using Windows `Export-Clixml`, encrypted for the current 
 This exports both sides, transfers packages, runs the mediator, and validates the merged package without importing it into live Codex state:
 
 ```powershell
+$env:CODEX_DESKTOP_SSH_PASSWORD = Read-Host "Remote SSH password"
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Invoke-CodexTwoWaySync.ps1 `
   -Mode ExportMergeOnly `
   -DesktopHost "192.0.2.10" `
   -DesktopUser "YOUR_REMOTE_USER" `
   -DesktopHostKey "SHA256:YOUR_PINNED_HOST_KEY" `
-  -DesktopPassword "YOUR_REMOTE_PASSWORD" `
+  -DesktopPassword $env:CODEX_DESKTOP_SSH_PASSWORD `
   -NoCloseLocalForTest
 ```
 
