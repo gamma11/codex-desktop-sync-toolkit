@@ -4,6 +4,17 @@ Windows tooling for backing up, exporting, merging, importing, repairing, and va
 
 This is for people who use Codex Desktop on more than one Windows machine and need chats to appear under the right Projects after moving state between machines.
 
+## Status
+
+This has only been validated on one two-PC Windows setup. It works for that setup, but Codex Desktop state is not a stable public sync API, so you should expect to tweak paths, validation rules, and repair behavior for your own situation. Codex can help adapt the scripts to your machines.
+
+Recommended rollout:
+
+1. Start with one-way sync from your known-good machine to a test target.
+2. Validate SQLite state, rollout files, project grouping, and the rendered Codex sidebar.
+3. Keep the scheduled task disabled until one-way restore and validation are repeatable.
+4. Enable two-way sync only after you understand the reports and backups.
+
 ## What It Does
 
 - Creates timestamped state packages from each PC.
@@ -108,6 +119,7 @@ Each run writes a report under:
 - Codex Desktop internal state can change between releases. The scripts validate the current schema before importing, but review reports after app updates.
 - If both machines edit the same chat, latest timestamp wins. The losing state remains in the source package backups.
 - If system clocks drift, latest-wins conflict resolution becomes less reliable. Keep both PCs time-synced.
+- Do not enable unattended two-way sync until a one-way sync has been tested and visually validated on your machines.
 
 ## License
 

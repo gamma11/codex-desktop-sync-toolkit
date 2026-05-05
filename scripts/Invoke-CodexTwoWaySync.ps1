@@ -13,7 +13,8 @@ param(
     [string]$CredentialPath = "",
     [switch]$UseStageOffsets,
     [switch]$NoCloseLocalForTest,
-    [switch]$SkipDesktopVisualValidation
+    [switch]$SkipDesktopVisualValidation,
+    [int]$MaxLockAgeMinutes = 180
 )
 
 $ErrorActionPreference = "Stop"
@@ -128,7 +129,8 @@ function Wait-Stage {
     param([string]$Name, [int]$OffsetMinutes)
     if ($UseStageOffsets) {
         $target = (Get-Date).Date.AddHours(3).AddMinutes($OffsetMinutes)
-        if ((Get-Date) -gt $target.AddMinutes(2)) {
+        $windowEnd = (Get-Date).Date.AddHours(6)
+        if ((Get-Date) -gt $windowEnd) {
             $target = $target.AddDays(1)
         }
         Write-RunLog "Waiting for stage '$Name' until $($target.ToString('s'))."
@@ -141,7 +143,19 @@ function Wait-Stage {
 
 if (Test-Path $lockPath) {
     $existing = Get-Content -Path $lockPath -Raw -ErrorAction SilentlyContinue
-    throw "Sync lock already exists: $lockPath`n$existing"
+    $lock = Get-Item -LiteralPath $lockPath
+    $lockAgeMinutes = ((Get-Date) - $lock.LastWriteTime).TotalMinutes
+    $lockPid = $null
+    if ($existing -match "pid=(\d+)") {
+        $lockPid = [int]$Matches[1]
+    }
+    $lockProcess = if ($lockPid) { Get-Process -Id $lockPid -ErrorAction SilentlyContinue } else { $null }
+    if (-not $lockProcess -and $lockAgeMinutes -gt $MaxLockAgeMinutes) {
+        Write-RunLog "Removing stale sync lock older than $MaxLockAgeMinutes minutes: $lockPath"
+        Remove-Item -LiteralPath $lockPath -Force
+    } else {
+        throw "Sync lock already exists: $lockPath`n$existing"
+    }
 }
 
 $summary = [ordered]@{

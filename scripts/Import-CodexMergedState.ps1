@@ -52,7 +52,7 @@ Write-Host "Validating latest $SourceName package..."
 Invoke-SyncCommand -Command "validate-latest"
 
 Write-Host "Importing $SourceName package with pre-import backup..."
-Invoke-SyncCommand -Command "import" -ExtraArgs @("--replace-profile-files") -Apply
+Invoke-SyncCommand -Command "import" -Apply
 
 Write-Host "Repairing imported profile paths..."
 Invoke-SyncCommand -Command "repair-paths" -Apply

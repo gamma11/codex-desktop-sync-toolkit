@@ -16,6 +16,14 @@ Import and repair commands refuse to write while `Codex.exe` or `codex.exe` is r
 
 Package validation checks SQLite integrity, critical files, and referenced rollout file counts before import.
 
+## Incomplete Session Packages
+
+Two-way import should overlay referenced rollout files instead of deleting the whole local `sessions` tree. A package can be internally valid while still being incomplete for a particular local machine or Codex release. Keeping existing rollout files is safer than replacing the full session roots.
+
+## Stale Locks
+
+The orchestrator uses a lock file to prevent overlapping syncs. If a run is interrupted while waiting for an offset stage, later runs can be blocked. The current script removes stale locks when the recorded PID is no longer running and the lock is older than the configured threshold.
+
 ## OneDrive Latency
 
 The orchestrator copies packages directly over SSH with `pscp`; it does not rely on OneDrive timing for the active transfer.
